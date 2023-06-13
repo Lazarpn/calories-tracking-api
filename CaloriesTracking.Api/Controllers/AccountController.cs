@@ -17,7 +17,7 @@ public class AccountController : BaseController
     }
 
     /// <summary>
-    /// Registeres a user 
+    /// Registers a user 
     /// </summary>
     /// <param name="model">UserRegisterModel</param>
     /// <returns>AuthResponse-User informations</returns>
@@ -43,32 +43,4 @@ public class AccountController : BaseController
         var authResponse = await accountManager.Login(model);
         return Ok(authResponse);
     }
-
-    /// <summary>
-    /// Refreshed the token
-    /// </summary>
-    /// <param name="model">AuthReponseModel</param>
-    /// <returns>AuthResponse-User informations</returns>
-    [HttpPost("refreshtoken")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseModel))]
-    public async Task<ActionResult<AuthResponseModel>> RefreshToken([FromBody] AuthResponseModel model)
-    {
-        var authResponse = await accountManager.VerifyRefreshToken(model);
-        return Ok(authResponse);
-    }
-
-    ///// <summary>
-    ///// Verifies email
-    ///// </summary>
-    ///// <param name="model">UserLoginModel</param>
-    ///// <returns>AuthResponse-User informations</returns>
-    //[HttpPost("verify")]
-    //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-    //[ProducesResponseType(StatusCodes.Status204NoContent)]
-    //public async Task<IActionResult> RefreshToken()
-    //{
-    //    await accountManager.EmailVerify(model);
-    //    return NoContent();
-    //}
 }

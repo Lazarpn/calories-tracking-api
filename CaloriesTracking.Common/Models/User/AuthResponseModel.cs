@@ -10,6 +10,5 @@ public class AuthResponseModel
 {
     public Guid UserId { get; set; }
     public string Token { get; set; }
-    public string RefreshToken { get; set; }
     public UserMeModel User { get; set; }
 }

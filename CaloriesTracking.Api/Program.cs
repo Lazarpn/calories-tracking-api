@@ -84,6 +84,7 @@ try
                 policyBuilder
                     .AllowAnyMethod()
                     .AllowAnyHeader()
+                    .WithExposedHeaders("refreshed-token")
                     .AllowCredentials()
                     .WithOrigins(allowedDomains);
                 policyBuilder.SetPreflightMaxAge(TimeSpan.FromSeconds(600));
@@ -183,6 +184,7 @@ try
     app.UseAuthorization();
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
+    app.UseMiddleware<SessionManagementMiddleware>();
 
     bool shouldShowSwagger = bool.Parse(builder.Configuration["showSwagger"]);
     if (shouldShowSwagger)

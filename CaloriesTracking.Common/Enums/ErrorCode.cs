@@ -8,6 +8,7 @@ namespace CaloriesTracking.Common.Enums;
 public enum ErrorCode
 {
     RequestInvalid,
+    Unauthorized,
     RequirementsNotMet,
     EntityDoesNotExist,
     EntityAlreadyExists,

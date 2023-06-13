@@ -19,6 +19,7 @@ namespace CaloriesTracking.Core;
 public class AccountManager
 {
     private readonly CaloriesTrackingDbContext db;
+    private readonly JwtHelper jwtHelper;
     private readonly IMapper mapper;
     private readonly UserManager<User> userManager;
     private readonly IConfiguration configuration;
@@ -33,6 +34,7 @@ public class AccountManager
         this.configuration = configuration;
         this.userManager = userManager;
         this.db = db;
+        this.jwtHelper = new JwtHelper(configuration);
     }
 
     public async Task<AuthResponseModel> Login(UserLoginModel model)
@@ -58,7 +60,8 @@ public class AccountManager
             throw new ValidationException(ErrorCode.InvalidCredentials);
         }
 
-        var token = await GenerateToken(user);
+        var roles = await userManager.GetRolesAsync(user);
+        var token = jwtHelper.GenerateJwtToken(user.Id, user.Email, roles);
         //var userInfo = mapper.Map<UserMeModel>(user);
 
         // TODO: nije li ovo nepotreban query i projectTo jer vec imam user-a, mogao sam samo new Model?
@@ -67,7 +70,6 @@ public class AccountManager
 
         return new AuthResponseModel
         {
-            RefreshToken = await CreateRefreshToken(user.Id),
             Token = token,
             UserId = user.Id,
             User = userInfo
@@ -120,7 +122,8 @@ public class AccountManager
             throw new ValidationException(ErrorCode.IdentityError);
         }
 
-        var token = await GenerateToken(newUser);
+        var roles = await userManager.GetRolesAsync(newUser);
+        var token = jwtHelper.GenerateJwtToken(newUser.Id, newUser.Email, roles);
         var userInfo = new UserMeModel
         {
             FirstName = newUser.FirstName,
@@ -130,100 +133,9 @@ public class AccountManager
 
         return new AuthResponseModel
         {
-            RefreshToken = await CreateRefreshToken(newUser.Id),
             Token = token,
             UserId = newUser.Id,
             User = userInfo
         };
-    }
-
-    //public async Task<AuthResponseModel> EmailVerify(model)
-    //{
-    //    //model.VerifiedAt = DateTime.UtcNow;
-    //    //User.EmailVerified
-
-    //    return new AuthResponseModel
-    //    {
-    //        RefreshToken = await CreateRefreshToken(newUser.Id),
-    //        Token = token,
-    //        UserId = newUser.Id,
-    //        User = userInfo
-    //    };
-    //}
-
-    private async Task<string> GenerateToken(User user)
-    {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:jwtKey"]));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-        var roles = await userManager.GetRolesAsync(user);
-        var rolesClaims = roles.Select(x => new Claim("role", x)).ToList();
-        var userClaims = await userManager.GetClaimsAsync(user);
-        var claims = new List<Claim>
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-        }.Union(userClaims).Union(rolesClaims);
-
-        var token = new JwtSecurityToken(
-            issuer: configuration["JwtSettings:jwtIssuer"],
-            audience: configuration["JwtSettings:jwtAudience"],
-            claims: claims,
-            expires: DateTime.Now.AddMinutes(Convert.ToInt32(configuration["JwtSettings:durationInMinutes"])),
-            signingCredentials: credentials
-           );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    public async Task<string> CreateRefreshToken(Guid id)
-    {
-        var user = await userManager.FindByIdAsync(id.ToString());
-        // TODO: videti da li treba ovde da se cuva rezultat i proverava za exception
-        await userManager.RemoveAuthenticationTokenAsync(user, configuration["JwtSettings:jwtIssuer"], "RefreshToken");
-
-        var newRefreshToken = await userManager.GenerateUserTokenAsync(user, configuration["JwtSettings:jwtIssuer"], "RefreshToken");
-        var result = await userManager.SetAuthenticationTokenAsync(user, configuration["JwtSettings:jwtIssuer"], "RefreshToken", newRefreshToken);
-
-        if (result == null)
-        {
-            throw new ValidationException(ErrorCode.IdentityError);
-        }
-
-        return newRefreshToken;
-    }
-
-    public async Task<AuthResponseModel> VerifyRefreshToken(AuthResponseModel model)
-    {
-        var user = await userManager.FindByIdAsync(model.UserId.ToString());
-        ValidationHelper.MustExist(user);
-
-        var isValidRefreshToken = await userManager.VerifyUserTokenAsync(user, configuration["JwtSettings:jwtIssuer"], "RefreshToken", model.RefreshToken);
-
-        if (!isValidRefreshToken)
-        {
-            await userManager.UpdateSecurityStampAsync(user);
-            // TODO: jel mi zapravo uopste treba exception ovde?
-            throw new ValidationException(ErrorCode.IdentityError);
-        }
-
-        var newToken = await GenerateToken(user);
-        var userInfo = new UserMeModel
-        {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Email = user.Email,
-            CaloriesPreference = user.CaloriesPreference,
-            UserPhotoByte = user.UserPhoto
-        };
-        var authResponse = new AuthResponseModel
-        {
-            RefreshToken = await CreateRefreshToken(user.Id),
-            Token = newToken,
-            UserId = user.Id,
-            User = userInfo
-        };
-
-        return authResponse;
     }
 }
