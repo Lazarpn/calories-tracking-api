@@ -77,15 +77,14 @@ public class UserController : BaseController
     /// <summary>
     /// Gets user informations
     /// </summary>
-    /// <param name="email">User's email</param>
     /// <returns>User informations</returns>
     [Authorize]
     [HttpGet("me")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserMeModel))]
-    public async Task<ActionResult<UserMeModel>> GetUserInfo(string email)
+    public async Task<ActionResult<UserMeModel>> GetUserInfo()
     {
-        var user = await ctUserManager.GetUserInfo(email);
+        var user = await ctUserManager.GetUserInfo(GetCurrentUserId().Value);
         return Ok(user);
     }
 
@@ -107,31 +106,31 @@ public class UserController : BaseController
     }
 
     /// <summary>
-    /// Updates a user with a given Id
+    /// Updates a user with a given Email
     /// </summary>
-    /// <param name="id">User's Id</param>
+    /// <param name="email">User's email</param>
     /// <param name="model">UserAdminUpdateModel</param>
     [Authorize(Roles = UserRoleConstants.Administrator)]
-    [HttpPut("admin/{id:guid}")]
+    [HttpPut("admin/{email}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> UpdateUser(Guid id, UserAdminUpdateModel model)
+    public async Task<IActionResult> UpdateUser(string email, UserAdminUpdateModel model)
     {
-        await ctUserManager.UpdateUser(id, model);
+        await ctUserManager.UpdateUser(email, model);
         return NoContent();
     }
 
     /// <summary>
-    /// Deletes a user with a given Id 
+    /// Deletes a user with a given email
     /// </summary>
-    /// <param name="id">User's Id</param>
+    /// <param name="email">User's Email</param>
     [Authorize(Roles = UserRoleConstants.Administrator)]
-    [HttpDelete("admin/{id:guid}")]
+    [HttpDelete("admin/{email}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> DeleteUser(Guid id)
+    public async Task<IActionResult> DeleteUser(string email)
     {
-        await ctUserManager.DeleteUser(id);
+        await ctUserManager.DeleteUser(email);
         return NoContent();
     }
 }

@@ -62,17 +62,10 @@ public class AccountManager
 
         var roles = await userManager.GetRolesAsync(user);
         var token = jwtHelper.GenerateJwtToken(user.Id, user.Email, roles);
-        //var userInfo = mapper.Map<UserMeModel>(user);
-
-        // TODO: nije li ovo nepotreban query i projectTo jer vec imam user-a, mogao sam samo new Model?
-        var userQuery = db.Users.Where(u => u.Id == user.Id);
-        var userInfo = await mapper.ProjectTo<UserMeModel>(userQuery).FirstAsync();
 
         return new AuthResponseModel
         {
             Token = token,
-            UserId = user.Id,
-            User = userInfo
         };
     }
 
@@ -124,18 +117,10 @@ public class AccountManager
 
         var roles = await userManager.GetRolesAsync(newUser);
         var token = jwtHelper.GenerateJwtToken(newUser.Id, newUser.Email, roles);
-        var userInfo = new UserMeModel
-        {
-            FirstName = newUser.FirstName,
-            LastName = newUser.LastName,
-            Email = newUser.Email,
-        };
 
         return new AuthResponseModel
         {
             Token = token,
-            UserId = newUser.Id,
-            User = userInfo
         };
     }
 }

@@ -54,14 +54,14 @@ public class CtUserManager
         return userPhoto;
     }
 
-    public async Task<UserMeModel> GetUserInfo(string email)
+    public async Task<UserMeModel> GetUserInfo(Guid userId)
     {
-        var user = await db.Users.FirstAsync(u => u.Email == email);
+        var user = await db.Users.FirstAsync(u => u.Id == userId);
         var userInfo = new UserMeModel
         {
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Email = email,
+            Email = user.Email,
             CaloriesPreference = user.CaloriesPreference,
             UserPhotoByte = user.UserPhoto,
         };
@@ -80,9 +80,10 @@ public class CtUserManager
         return usersList;
     }
 
-    public async Task UpdateUser(Guid userId, UserAdminUpdateModel model)
+    public async Task UpdateUser(string email, UserAdminUpdateModel model)
     {
-        var user = await userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindByEmailAsync(email);
+        ValidationHelper.MustExist(user);
 
         user.FirstName = model.FirstName;
         user.LastName = model.LastName;
@@ -92,9 +93,10 @@ public class CtUserManager
         await userManager.UpdateAsync(user);
     }
 
-    public async Task DeleteUser(Guid userId)
+    public async Task DeleteUser(string email)
     {
-        var user = await userManager.FindByIdAsync(userId.ToString());
+        var user = await userManager.FindByEmailAsync(email);
+        ValidationHelper.MustExist(user);
         await userManager.DeleteAsync(user);
     }
 }
