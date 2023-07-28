@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="SendGrid" Version="9.28.1" />
     <PackageReference Include="SendGrid.Extensions.DependencyInjection" Version="1.0.1" />
+    <PackageReference Include="SkiaSharp" Version="2.88.3" />
   </ItemGroup>
 
   <ItemGroup>

@@ -38,7 +38,7 @@ public class ExceptionHandlingMiddleware
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         HttpStatusCode statusCode;
-
+        
         List<ExceptionDetail> exceptionDetails = new List<ExceptionDetail>();
 
         if (exception is ValidationException)

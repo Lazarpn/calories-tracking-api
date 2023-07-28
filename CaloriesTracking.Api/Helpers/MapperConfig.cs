@@ -14,7 +14,6 @@ public class MapperConfig : Profile
 
         CreateMap<UserRegisterModel, User>().ReverseMap();
         CreateMap<UserLoginModel, User>().ReverseMap();
-        CreateMap<UserPhotoModel, User>().ReverseMap();
         CreateMap<UserCaloriesModel, User>().ReverseMap();
         CreateMap<UserUpdateModel, User>().ReverseMap();
         //CreateMap<User, UserMeModel>().ReverseMap();

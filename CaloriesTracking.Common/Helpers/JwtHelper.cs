@@ -21,7 +21,6 @@ public class JwtHelper
         this.configuration = configuration;
     }
 
-
     public string GenerateJwtToken(Guid userId, string email, IList<string> roles)
     {
         var tokenHandler = new JwtSecurityTokenHandler();

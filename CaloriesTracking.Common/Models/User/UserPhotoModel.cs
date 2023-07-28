@@ -7,6 +7,5 @@ using System.Threading.Tasks;
 namespace CaloriesTracking.Common.Models.User;
 public class UserPhotoModel
 {
-    public string UserPhoto { get; set; }
-
+    public string FileUrl { get; set; }
 }

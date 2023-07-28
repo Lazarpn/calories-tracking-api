@@ -25,7 +25,7 @@ public class UserController : BaseController
     [HttpPut("me/calories")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> UpdateCaloriesPreference(UserCaloriesModel model)
+    public async Task<IActionResult> UpdateCaloriesPreference([FromForm] UserCaloriesModel model)
     {
         await ctUserManager.UpdateCaloriesPreference(GetCurrentUserId().Value, model);
         return NoContent();
@@ -34,15 +34,16 @@ public class UserController : BaseController
     /// <summary>
     /// Updates a user photo
     /// </summary>
-    /// <param name="model">UserPhotoModel</param>
+    /// <param name="model">File to be uploaded</param>
     [Authorize]
     [HttpPut("me/photo")]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> UpdatePhoto(UserPhotoModel model)
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserPhotoModel))]
+    public async Task<ActionResult<UserPhotoModel>> UpdatePhoto([FromForm] UserPhotoUploadModel model)
     {
-        await ctUserManager.UpdatePhoto(GetCurrentUserId().Value, model);
-        return NoContent();
+        var userPhoto = await ctUserManager.UpdatePhoto(GetCurrentUserId().Value, model);
+        return Ok(userPhoto);
     }
 
     /// <summary>
@@ -101,8 +102,8 @@ public class UserController : BaseController
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<UserMeModel>))]
     public async Task<ActionResult<List<UserMeModel>>> GetUsers()
     {
-            var users = await ctUserManager.GetUsers();
-            return Ok(users);
+        var users = await ctUserManager.GetUsers();
+        return Ok(users);
     }
 
     /// <summary>

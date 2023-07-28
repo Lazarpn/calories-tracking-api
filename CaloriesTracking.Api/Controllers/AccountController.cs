@@ -23,8 +23,8 @@ public class AccountController : BaseController
     /// <returns>AuthResponse-User informations</returns>
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseModel))]
-    public async Task<ActionResult<AuthResponseModel>> Register(UserRegisterModel model)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Register(UserRegisterModel model)
     {
         var authResponse = await accountManager.Register(model);
         return Ok(authResponse);
@@ -43,4 +43,37 @@ public class AccountController : BaseController
         var authResponse = await accountManager.Login(model);
         return Ok(authResponse);
     }
+
+    //[HttpGet("confirm-email")]
+    //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+    //[ProducesResponseType(StatusCodes.Status204NoContent)]
+    //public async Task<IActionResult> ConfirmEmail(string code)
+    //{
+    //    return Ok();
+    //}
+
+    /////<summary>
+    ///// Starts the password reset process by sending a forgot password email
+    ///// </summary>
+    ///// <param name="model"></param>
+    //[HttpPut("password/forgot")]
+    //[ProducesResponseType(StatusCodes.Status204NoContent)]
+    //public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
+    //{
+    //    await accountManager.ForgotPassword(model);
+    //    return NoContent();
+    //}
+
+    ///// <summary>
+    ///// Verifies and completes the reset password process
+    ///// </summary>
+    ///// <param name="model"></param>
+    ///// <returns></returns>
+    //[HttpPut("password/reset")]
+    //[ProducesResponseType(StatusCodes.Status204NoContent)]
+    //public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
+    //{
+    //    await accountManager.ResetPassword(model);
+    //    return NoContent();
+    //}
 }

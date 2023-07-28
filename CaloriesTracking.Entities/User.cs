@@ -22,9 +22,18 @@ public class User : IdentityUser<Guid>
 
     [Range(0, 20000)]
     public int CaloriesPreference { get; set; }
-    public byte[] UserPhoto { get; set; }
 
+    [MaxLength(50)]
+    public string FileName { get; set; }
 
+    [MaxLength(1000)]
+    public string FileOriginalName { get; set; }
+
+    [MaxLength(1000)]
+    public string FileUrl { get; set; }
+
+    [MaxLength(1000)]
+    public string ThumbUrl { get; set; }
 
     [InverseProperty(nameof(Meal.User))]
     public ICollection<Meal> Meals { get; set; } = new HashSet<Meal>();

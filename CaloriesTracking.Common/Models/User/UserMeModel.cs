@@ -11,5 +11,4 @@ public class UserMeModel
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public int? CaloriesPreference { get; set; }
-    public byte[] UserPhotoByte { get; set; }
 }

@@ -14,5 +14,11 @@ public enum ErrorCode
     EntityAlreadyExists,
     IdentityError,
     InternalServerError,
-    InvalidCredentials
+    InvalidCredentials,
+    EmptyFile,
+    MaxFileSizeReached,
+    CanOnlyUploadPhotos,
+    WrongAspectRatio,
+    MissingAspectRatio
 }
+

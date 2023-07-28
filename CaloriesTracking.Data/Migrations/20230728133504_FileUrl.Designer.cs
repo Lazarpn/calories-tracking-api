@@ -4,6 +4,7 @@ using CaloriesTracking.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CaloriesTracking.Data.Migrations
 {
     [DbContext(typeof(CaloriesTrackingDbContext))]
-    partial class CaloriesTrackingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230728133504_FileUrl")]
+    partial class FileUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

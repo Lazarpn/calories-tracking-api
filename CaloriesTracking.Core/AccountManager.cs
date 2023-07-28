@@ -19,6 +19,7 @@ namespace CaloriesTracking.Core;
 public class AccountManager
 {
     private readonly CaloriesTrackingDbContext db;
+    private readonly SendGridEmailManager sendgridEmailManager;
     private readonly JwtHelper jwtHelper;
     private readonly IMapper mapper;
     private readonly UserManager<User> userManager;
@@ -28,13 +29,16 @@ public class AccountManager
         IMapper mapper,
         UserManager<User> userManager,
         IConfiguration configuration,
-        CaloriesTrackingDbContext db)
+        CaloriesTrackingDbContext db,
+        SendGridEmailManager sendgridEmailManager
+        )
     {
         this.mapper = mapper;
         this.configuration = configuration;
         this.userManager = userManager;
         this.db = db;
-        this.jwtHelper = new JwtHelper(configuration);
+        this.sendgridEmailManager = sendgridEmailManager;
+        jwtHelper = new JwtHelper(configuration);
     }
 
     public async Task<AuthResponseModel> Login(UserLoginModel model)
@@ -88,9 +92,10 @@ public class AccountManager
             FirstName = model.FirstName,
             LastName = model.LastName,
             Email = model.Email,
-            UserName = model.Email
+            UserName = model.Email,
+            EmailConfirmed = false
         };
-
+        
         try
         {
             var userCreateResult = await userManager.CreateAsync(newUser, model.Password);
@@ -115,6 +120,8 @@ public class AccountManager
             throw new ValidationException(ErrorCode.IdentityError);
         }
 
+        var code = userManager.GenerateEmailConfirmationTokenAsync(newUser);
+
         var roles = await userManager.GetRolesAsync(newUser);
         var token = jwtHelper.GenerateJwtToken(newUser.Id, newUser.Email, roles);
 
@@ -123,4 +130,9 @@ public class AccountManager
             Token = token,
         };
     }
+
+    //private async Task ConfirmEmail(string code)
+    //{
+
+    //}
 }

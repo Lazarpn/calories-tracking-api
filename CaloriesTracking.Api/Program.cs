@@ -1,3 +1,4 @@
+using Azure.Storage.Blobs;
 using CaloriesTracking.Api.ActionResults;
 using CaloriesTracking.Api.Helpers;
 using CaloriesTracking.Common.Helpers;
@@ -36,6 +37,12 @@ try
         .AddEntityFrameworkStores<CaloriesTrackingDbContext>()
         .AddDefaultTokenProviders();
 
+    builder.Services.AddAuthentication().AddGoogle(googleOptions =>
+    {
+        googleOptions.ClientId = builder.Configuration["Google:clientId"];
+        googleOptions.ClientSecret = builder.Configuration["Google:clientSecret"];
+    });
+
     builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -64,7 +71,7 @@ try
     builder.Services.AddScoped<AccountManager>();
     builder.Services.AddScoped<CtUserManager>();
     builder.Services.AddScoped<MealManager>();
-
+    builder.Services.AddScoped<FileManager>();
 
     logger.Info("App: Configuring forwarded headers");
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -100,11 +107,12 @@ try
     logger.Info("App: Configuring SendGrid");
     builder.Services.AddSendGrid(options =>
     {
-        options.ApiKey = builder.Configuration["SendgridApiKey"];
+        options.ApiKey = builder.Configuration["SendGridApiKey"];
     });
 
 
     logger.Info("App: Configuring Core services");
+    builder.Services.AddScoped<SendGridEmailManager>();
     //builder.Services.AddScoped<EmailManager>();
     //builder.Services.AddScoped<SendGridApiService>();
 
@@ -142,7 +150,7 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
-        options.SwaggerDoc("v1", new OpenApiInfo { Title = "StudyStream API", Version = "v1" });
+        options.SwaggerDoc("v1", new OpenApiInfo { Title = "CaloriesTracking API", Version = "v1" });
         options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
         {
             In = ParameterLocation.Header,
@@ -192,7 +200,7 @@ try
         app.UseSwagger();
         app.UseSwaggerUI(uiOptions =>
         {
-            uiOptions.SwaggerEndpoint("/swagger/v1/swagger.json", "StudyStream API V1");
+            uiOptions.SwaggerEndpoint("/swagger/v1/swagger.json", "CalorieseTracking API V1");
             uiOptions.InjectStylesheet("/swagger-ui/styles.css");
         });
     }
