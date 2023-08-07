@@ -3,7 +3,6 @@ using CaloriesTracking.Common.Models.Meal;
 using CaloriesTracking.Common.Models.User;
 using CaloriesTracking.Entities;
 
-namespace CaloriesTracking.Common;
 public class MapperConfig : Profile
 {
     public MapperConfig()
@@ -21,6 +20,7 @@ public class MapperConfig : Profile
         //    .ForMember(d => d.MealsCreated,
         //        opt => opt.MapFrom(c => c.Meals.Count()));
         CreateMap<User, UserMeModel>().ReverseMap();
+        CreateMap<User, UserAdminModel>().ReverseMap();
         CreateMap<UserAdminUpdateModel, User>().ReverseMap();
         //
         CreateMap<UserCaloriesModel, UserMeModel>().ReverseMap();

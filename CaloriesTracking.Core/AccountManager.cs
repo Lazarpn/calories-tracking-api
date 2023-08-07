@@ -6,6 +6,7 @@ using CaloriesTracking.Common.Models.User;
 using CaloriesTracking.Data;
 using CaloriesTracking.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -16,29 +17,32 @@ using System.Text;
 
 namespace CaloriesTracking.Core;
 
+
 public class AccountManager
 {
     private readonly CaloriesTrackingDbContext db;
-    private readonly SendGridEmailManager sendgridEmailManager;
+    private readonly SendGridEmailManager emailManager;
     private readonly JwtHelper jwtHelper;
     private readonly IMapper mapper;
     private readonly UserManager<User> userManager;
     private readonly IConfiguration configuration;
+    private readonly string ANGULAR_APP_URL;
 
     public AccountManager(
         IMapper mapper,
         UserManager<User> userManager,
         IConfiguration configuration,
         CaloriesTrackingDbContext db,
-        SendGridEmailManager sendgridEmailManager
+        SendGridEmailManager emailManager
         )
     {
         this.mapper = mapper;
         this.configuration = configuration;
         this.userManager = userManager;
         this.db = db;
-        this.sendgridEmailManager = sendgridEmailManager;
+        this.emailManager = emailManager;
         jwtHelper = new JwtHelper(configuration);
+        ANGULAR_APP_URL = configuration["AngularAppUrl"];
     }
 
     public async Task<AuthResponseModel> Login(UserLoginModel model)
@@ -76,6 +80,7 @@ public class AccountManager
     public async Task<AuthResponseModel> Register(UserRegisterModel model)
     {
         var user = await userManager.FindByEmailAsync(model.Email);
+        var roless =  await db.Roles.ToListAsync();
         ValidationHelper.MustNotExist(user);
 
         var passwordValidator = new PasswordValidator<User>();
@@ -131,8 +136,36 @@ public class AccountManager
         };
     }
 
-    //private async Task ConfirmEmail(string code)
-    //{
+    public async Task ForgotPassword(ForgotPasswordModel model)
+    {
+        var user = await userManager.FindByEmailAsync(model.Email);
+        ValidationHelper.MustExist(user);
 
-    //}
+        var resetPasswordToken = await userManager.GeneratePasswordResetTokenAsync(user);
+        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(resetPasswordToken));
+        var resetPasswordUrl = $"{ANGULAR_APP_URL}/auth/reset-password/{user.Id}/{encodedToken})";
+        await emailManager.SendForgotPasswordEmail(model.Email, resetPasswordUrl);
+    }
+
+    public async Task ResetPassword(ResetPasswordModel model)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == model.UserId);
+        ValidationHelper.MustExist(user);
+
+        //var userBeforeChanges = user.ShallowCopy();
+
+        model.Token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Token));
+        var result = await userManager.ResetPasswordAsync(user, model.Token, model.Password);
+
+        ValidationHelper.CheckIdentityResult(result, new ErrorOverrideModel
+        {
+            TextToOverride = "Invalid token.",
+            OverrideWith = "This reset password link has already been used. Please go back to Log In page and start the process again."
+        });
+
+        //user.LoginSettings.UnsuccessfulLoginAttempts = 0;
+
+        await db.SaveChangesAsync();
+        //await platformUserManager.StoreChangeLog(userBeforeChanges, user, changeMadeByUserId: user.Id);
+    }
 }

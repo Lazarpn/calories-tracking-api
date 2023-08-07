@@ -188,8 +188,7 @@ public class FileManager
         if (IsImage(fileName) && !fileName.Contains("_thumb"))
         {
             var extension = Path.GetExtension(fileName).ToLowerInvariant();
-            var thumbFileName =
-            $"{Path.GetFileNameWithoutExtension(fileName)}_thumb{extension}";
+            var thumbFileName = $"{Path.GetFileNameWithoutExtension(fileName)}_thumb{extension}";
             await DeleteFileIfExists<T>(thumbFileName, containerClient);
         }
     }
@@ -242,20 +241,15 @@ public class FileManager
         double aspectRatio,
         int thumbnailDimension)
     {
-        var extension = skiaImageExtensions.First(e => e.Key ==
-        Path.GetExtension(fileName).ToLowerInvariant());
-        var thumbFileName =
-        $"{Path.GetFileNameWithoutExtension(fileName)}_thumb{extension.Key}";
+        var extension = skiaImageExtensions.First(e => e.Key == Path.GetExtension(fileName).ToLowerInvariant());
+        var thumbFileName = $"{Path.GetFileNameWithoutExtension(fileName)}_thumb{extension.Key}";
         var blobClient = containerClient.GetBlobClient(thumbFileName);
 
         using SKBitmap sourceBitmap = SKBitmap.Decode(fileStream);
-        using SKBitmap croppedAndResizedBitmap = CropAndResize(sourceBitmap,
-        thumbnailDimension, aspectRatio);
+        using SKBitmap croppedAndResizedBitmap = CropAndResize(sourceBitmap, thumbnailDimension, aspectRatio);
 
-        var imageFormat = skiaImageExtensions.First(e => e.Key ==
-        Path.GetExtension(fileName).ToLowerInvariant()).Value;
-        using Stream thumbStream = croppedAndResizedBitmap.Encode(imageFormat,
-        80).AsStream();
+        var imageFormat = skiaImageExtensions.First(e => e.Key == Path.GetExtension(fileName).ToLowerInvariant()).Value;
+        using Stream thumbStream = croppedAndResizedBitmap.Encode(imageFormat, 80).AsStream();
 
         await blobClient.UploadAsync(thumbStream, uploadHeaders);
     }

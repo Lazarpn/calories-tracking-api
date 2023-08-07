@@ -1,5 +1,6 @@
 using AutoMapper;
 using Azure.Storage.Blobs;
+using CaloriesTracking.Common;
 using CaloriesTracking.Common.Helpers;
 using CaloriesTracking.Common.Models.User;
 using CaloriesTracking.Data;
@@ -36,6 +37,8 @@ public class CtUserManager
     public async Task UpdateCaloriesPreference(Guid userId, UserCaloriesModel model)
     {
         var user = await db.Users.FindAsync(userId);
+        ValidationHelper.MustExist(user);
+
         user.CaloriesPreference = model.CaloriesPreference;
   
         await db.SaveChangesAsync();
@@ -48,6 +51,8 @@ public class CtUserManager
             return null;
         };
         var user = await db.Users.FindAsync(userId);
+        ValidationHelper.MustExist(user);
+
         user.FileName = await fileManager.ProcessFileStorageUpload<User>(model.File, user.FileName);
         user.FileOriginalName = model.File.FileName;
         user.FileUrl = await fileManager.GetFileStorageUrl<User>(user.FileName);
@@ -60,6 +65,8 @@ public class CtUserManager
     public async Task UpdateUserInfo(Guid userId, UserUpdateModel model)
     {
         var user = await db.Users.FindAsync(userId);
+        ValidationHelper.MustExist(user);
+
         user.FirstName = model.FirstName;
         user.LastName = model.LastName;
 
@@ -69,12 +76,15 @@ public class CtUserManager
     public async Task<UserPhotoModel> GetPhoto(Guid userId)
     {
         var user = await db.Users.FindAsync(userId);
+        ValidationHelper.MustExist(user);
         return new UserPhotoModel { FileUrl = user.ThumbUrl };
     }
 
     public async Task<UserMeModel> GetUserInfo(Guid userId)
     {
         var user = await db.Users.FirstAsync(u => u.Id == userId);
+        ValidationHelper.MustExist(user);
+
         var userInfo = new UserMeModel
         {
             FirstName = user.FirstName,
@@ -88,12 +98,13 @@ public class CtUserManager
 
     // ADMIN
 
-    public async Task<List<UserMeModel>> GetUsers()
+    public async Task<List<UserAdminModel>> GetUsers()
     {
         var users = await userManager.GetUsersInRoleAsync("user");
+        var userss = await db.Users.ToListAsync();
         // TODO: jel je ovde okej koristiti map jer pod jedan imam listu, pod 2 user-e
         // po roli mogu samo ovako da dobijem i ne mogu nikako projectTo?
-        var usersList = mapper.Map<List<UserMeModel>>(users);
+        var usersList = mapper.Map<List<UserAdminModel>>(users);
         return usersList;
     }
 

@@ -27,7 +27,6 @@ public abstract class SystemException : Exception
                 exceptionDetail.Params = responseParams;
             }
         }
-
         Details.Add(exceptionDetail);
     }
 

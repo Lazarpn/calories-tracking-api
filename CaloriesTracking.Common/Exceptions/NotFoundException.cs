@@ -9,6 +9,5 @@ public class NotFoundException : SystemException
 {
     public NotFoundException(ErrorCode errorCode, object responseParams = null) : base(errorCode, responseParams) { }
 
-    public NotFoundException(List<ExceptionDetail> details) : base(details)
-    { }
+    public NotFoundException(List<ExceptionDetail> details) : base(details) { }
 }

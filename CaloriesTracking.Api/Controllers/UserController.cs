@@ -25,7 +25,7 @@ public class UserController : BaseController
     [HttpPut("me/calories")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> UpdateCaloriesPreference([FromForm] UserCaloriesModel model)
+    public async Task<IActionResult> UpdateCaloriesPreference(UserCaloriesModel model)
     {
         await ctUserManager.UpdateCaloriesPreference(GetCurrentUserId().Value, model);
         return NoContent();
@@ -79,7 +79,7 @@ public class UserController : BaseController
     /// Gets user informations
     /// </summary>
     /// <returns>User informations</returns>
-    [Authorize]
+    //[Authorize]
     [HttpGet("me")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserMeModel))]
@@ -95,12 +95,12 @@ public class UserController : BaseController
     /// Gets users for administration
     /// </summary>
     /// <returns>Users</returns>
-    [Authorize(Roles = UserRoleConstants.Administrator)]
+    //[Authorize(Roles = UserRoleConstants.Administrator)]
     [HttpGet("admin/all")]
     //[ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<UserMeModel>))]
-    public async Task<ActionResult<List<UserMeModel>>> GetUsers()
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<UserAdminModel>))]
+    public async Task<ActionResult<List<UserAdminModel>>> GetUsers()
     {
         var users = await ctUserManager.GetUsers();
         return Ok(users);

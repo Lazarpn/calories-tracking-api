@@ -103,6 +103,7 @@ try
 
     logger.Info("App: Configuring DB Connections");
     builder.Services.AddDbContext<CaloriesTrackingDbContext>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("CaloriesTrackingDb")));
+    Console.WriteLine(builder.Configuration.GetConnectionString("CaloriesTrackingDb"));
 
     logger.Info("App: Configuring SendGrid");
     builder.Services.AddSendGrid(options =>

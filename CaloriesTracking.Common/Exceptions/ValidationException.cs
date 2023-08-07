@@ -8,10 +8,7 @@ namespace CaloriesTracking.Common.Exceptions;
 
 public class ValidationException : SystemException
 {
-    public ValidationException(ErrorCode errorCode, object responseParams = null) : base(errorCode, responseParams)
-    { }
-
-    public ValidationException(List<ExceptionDetail> details) : base(details)
-    { }
+    public ValidationException(ErrorCode errorCode, object responseParams = null) : base(errorCode, responseParams) { }
+    public ValidationException(List<ExceptionDetail> details) : base(details) { }
 }
 
