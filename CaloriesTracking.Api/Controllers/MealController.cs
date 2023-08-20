@@ -1,3 +1,4 @@
+using CaloriesTracking.Api.Auth;
 using CaloriesTracking.Common.Models.Meal;
 using CaloriesTracking.Core;
 using Microsoft.AspNetCore.Authorization;
@@ -20,8 +21,8 @@ public class MealController : BaseController
     /// Gives a list of user's meals
     /// </summary>
     /// <returns>Meal List</returns>
-    [Authorize]
     [HttpGet("me")]
+    [Authorize(Policy = Policies.EmailConfirmed)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<MealModel>))]
     public async Task<ActionResult<List<MealModel>>> GetUserMeals()
     {
@@ -34,8 +35,8 @@ public class MealController : BaseController
     /// </summary>
     /// <param name="model">MealCreateModel</param>
     /// <returns>Created meal with Id</returns>
-    [Authorize]
     [HttpPost]
+    [Authorize(Policy = Policies.EmailConfirmed)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MealModel))]
     public async Task<ActionResult<MealModel>> CreateMeal(MealCreateModel model)
@@ -49,8 +50,8 @@ public class MealController : BaseController
     /// </summary>
     /// <param name="id">Meal's Id</param>
     /// <returns>Meal with specified Id</returns>
-    [Authorize]
     [HttpGet("{id:guid}")]
+    [Authorize(Policy = Policies.EmailConfirmed)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MealModel))]
     public async Task<ActionResult<MealModel>> GetMeal(Guid id)
@@ -64,8 +65,8 @@ public class MealController : BaseController
     /// </summary>
     /// <param name="id">Meal's Id</param>
     /// <param name="model">MealUpdateModel</param>
-    [Authorize]
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = Policies.EmailConfirmed)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> UpdateMeal(Guid id, MealUpdateModel model)
@@ -78,8 +79,8 @@ public class MealController : BaseController
     /// Deletes a meal with a specified Id
     /// </summary>
     /// <param name="id">Meal's Id</param>
-    [Authorize]
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = Policies.EmailConfirmed)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteMeal(Guid id)

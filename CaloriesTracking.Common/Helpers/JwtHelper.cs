@@ -24,7 +24,7 @@ public class JwtHelper
     public string GenerateJwtToken(Guid userId, string email, IList<string> roles)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(configuration["JwtSettings:jwtKey"]);
+        var key = Encoding.UTF8.GetBytes(configuration["jwtKey"]);
         var securityKey = new SymmetricSecurityKey(key);
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
         var rolesClaims = roles.Select(x => new Claim("role", x)).ToList();
@@ -38,10 +38,10 @@ public class JwtHelper
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Audience = configuration["JwtSettings:jwtAudience"],
-            Issuer = configuration["JwtSettings:jwtIssuer"],
+            Audience = configuration["jwtAudience"],
+            Issuer = configuration["jwtIssuer"],
             Subject = claims,
-            Expires = DateTime.Now.AddMinutes(Convert.ToInt32(configuration["JwtSettings:durationInMinutes"])),
+            Expires = DateTime.Now.AddMinutes(Convert.ToInt32(configuration["durationInMinutes"])),
             SigningCredentials = credentials
         };
 
@@ -110,13 +110,13 @@ public class JwtHelper
 
     public bool VerifyToken(string token)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:jwtKey"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["jwtKey"]));
 
         var validationParameters = new TokenValidationParameters()
         {
             IssuerSigningKey = key,
-            ValidAudience = configuration["JwtSettings:jwtAudience"],
-            ValidIssuer = configuration["JwtSettings:jwtIssuer"],
+            ValidAudience = configuration["jwtAudience"],
+            ValidIssuer = configuration["jwtIssuer"],
             ValidateLifetime = true,
             ValidateAudience = true,
             ValidateIssuer = true,

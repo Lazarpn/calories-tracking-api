@@ -91,6 +91,7 @@ public class CtUserManager
             LastName = user.LastName,
             Email = user.Email,
             CaloriesPreference = user.CaloriesPreference,
+            EmailConfirmed = user.EmailConfirmed
         };
 
         return userInfo;

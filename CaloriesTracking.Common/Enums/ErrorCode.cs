@@ -19,6 +19,10 @@ public enum ErrorCode
     MaxFileSizeReached,
     CanOnlyUploadPhotos,
     WrongAspectRatio,
-    MissingAspectRatio
+    MissingAspectRatio,
+    EmailNotSent,
+    AlreadyConfirmedEmail,
+    InvalidConfirmationCode,
+    ConfirmationCodeExpired
 }
 

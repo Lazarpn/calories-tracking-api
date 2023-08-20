@@ -35,6 +35,11 @@ public class User : IdentityUser<Guid>
     [MaxLength(1000)]
     public string ThumbUrl { get; set; }
 
+    [MaxLength(6)]
+    public string EmailVerificationCode { get; set; }
+
+    public DateTime? DateVerificationCodeSent { get; set; }
+
     [InverseProperty(nameof(Meal.User))]
     public ICollection<Meal> Meals { get; set; } = new HashSet<Meal>();
 }

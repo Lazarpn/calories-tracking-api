@@ -40,12 +40,12 @@ public class CaloriesTrackingDbContext : IdentityDbContext<User, IdentityRole<Gu
                 new IdentityRole<Guid>
                 {
                     Name = UserRoleConstants.Administrator,
-                    //NormalizedName = "ADMINISTRATOR"
+                    NormalizedName = "ADMINISTRATOR"
                 },
                 new IdentityRole<Guid>
                 {
                     Name = UserRoleConstants.User,
-                    //NormalizedName = "USER"
+                    NormalizedName = "USER"
                 }
             });
 

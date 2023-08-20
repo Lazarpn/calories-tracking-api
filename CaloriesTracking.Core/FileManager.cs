@@ -24,8 +24,7 @@ public class FileManager
 {
     private readonly BlobServiceClient blobServiceClient;
 
-    private readonly Dictionary<string, SKEncodedImageFormat>
-    skiaImageExtensions = new()
+    private readonly Dictionary<string, SKEncodedImageFormat> skiaImageExtensions = new()
     {
         [".jpg"] = SKEncodedImageFormat.Jpeg,
         [".jpeg"] = SKEncodedImageFormat.Jpeg,
@@ -44,8 +43,7 @@ public class FileManager
     {
         THUMBNAIL_DIMENSION = int.Parse(configuration["thumbnailDimension"]);
         MAX_FILE_SIZE_IN_MB = int.Parse(configuration["maxFileSizeInMb"]);
-        MINUTES_BLOB_STORAGE_URL_EXPIRES_IN =
-        Convert.ToInt32(configuration["minutesBlobStorageUrlExpiresIn"]);
+        MINUTES_BLOB_STORAGE_URL_EXPIRES_IN = Convert.ToInt32(configuration["minutesBlobStorageUrlExpiresIn"]);
 
         var storageConnectionString = configuration.GetConnectionString("AzureWebJobsStorage");
         blobServiceClient = new BlobServiceClient(storageConnectionString);
@@ -131,13 +129,14 @@ public class FileManager
         return fileUri.AbsoluteUri;
     }
 
-    public async Task<string> ProcessFileStorageUpload<T>(
-        IFormFile file,
+    public async Task<string> ProcessFileStorageUpload<T>
+        (IFormFile file,
         string previousFileName = null,
         int? maxFileSizeOverride = null,
         double? forceAspectRatio = null,
         int? thumbnailDimension = null)
     {
+        //TODO: sto ovo nije u validateuploadedfile i kako formatirati vise parametara
         if (file.Length == 0)
         {
             throw new ValidationException(ErrorCode.EmptyFile);
@@ -160,9 +159,13 @@ public class FileManager
         if (IsImage(file.FileName))
         {
             fileStream.Position = 0;
-            await GenerateThumb(newFileName, fileStream, containerClient,
-            uploadHeaders, forceAspectRatio ?? 1, thumbnailDimension ??
-            THUMBNAIL_DIMENSION);
+            await GenerateThumb(
+                newFileName,
+                fileStream,
+                containerClient,
+                uploadHeaders,
+                forceAspectRatio ?? 1,
+                thumbnailDimension ?? THUMBNAIL_DIMENSION);
         }
 
         if (previousFileName != null)
@@ -233,8 +236,8 @@ public class FileManager
         }
     }
 
-    private async Task GenerateThumb(
-        string fileName,
+    private async Task GenerateThumb
+        (string fileName,
         Stream fileStream,
         BlobContainerClient containerClient,
         BlobHttpHeaders uploadHeaders,
@@ -260,10 +263,7 @@ public class FileManager
 
         if (invalidFileSize)
         {
-            throw new ValidationException(ErrorCode.MaxFileSizeReached, new
-            {
-                maxSizeInMb
-            });
+            throw new ValidationException(ErrorCode.MaxFileSizeReached, new { maxSizeInMb });
         }
 
         if (!validateAspectRatio)

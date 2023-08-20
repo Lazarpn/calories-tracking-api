@@ -22,6 +22,9 @@ using SendGrid.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
+using Microsoft.Extensions.Azure;
+using Microsoft.AspNetCore.Authorization;
+using CaloriesTracking.Api.Auth;
 
 Logger logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Info("App: Starting Application");
@@ -33,15 +36,15 @@ try
     // Add services to the container.
     logger.Info("App: Configuring identity");
     builder.Services.AddIdentity<User, IdentityRole<Guid>>()
-        .AddTokenProvider<DataProtectorTokenProvider<User>>(builder.Configuration["JwtSettings:jwtIssuer"])
+        .AddTokenProvider<DataProtectorTokenProvider<User>>(builder.Configuration["jwtIssuer"])
         .AddEntityFrameworkStores<CaloriesTrackingDbContext>()
         .AddDefaultTokenProviders();
 
-    builder.Services.AddAuthentication().AddGoogle(googleOptions =>
-    {
-        googleOptions.ClientId = builder.Configuration["Google:clientId"];
-        googleOptions.ClientSecret = builder.Configuration["Google:clientSecret"];
-    });
+    //builder.Services.AddAuthentication().AddGoogle(googleOptions =>
+    //{
+    //    googleOptions.ClientId = builder.Configuration["Google:clientId"];
+    //    googleOptions.ClientSecret = builder.Configuration["Google:clientSecret"];
+    //});
 
     builder.Services.AddAuthentication(options =>
     {
@@ -55,23 +58,37 @@ try
         options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidIssuer = builder.Configuration["JwtSettings:jwtIssuer"],
+            ValidIssuer = builder.Configuration["jwtIssuer"],
             ValidateIssuer = true,
-            ValidAudience = builder.Configuration["JwtSettings:jwtAudience"],
+            ValidAudience = builder.Configuration["jwtAudience"],
             ValidateAudience = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:jwtKey"])),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["jwtKey"])),
             ValidateIssuerSigningKey = true,
             ValidateLifetime = true
         };
     });
 
-    builder.Services.AddAuthorization();
+    builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy(Policies.NotConfirmedEmail, policy => policy.Requirements.Add(new NotConfirmedEmailRequirement()));
+        options.AddPolicy(Policies.EmailConfirmed, policy => policy.Requirements.Add(new EmailConfirmedRequirement()));
+        options.AddPolicy(Policies.RegisteredUser, policy => policy.Requirements.Add(new RegisteredUserRequirement()));
+        options.AddPolicy(Policies.AdministratorUser, policy => policy.Requirements.Add(new AdministratorUserRequirement()));
 
+    });
 
+    logger.Info("App: Configuring authorization policies");
+    builder.Services.AddScoped<IAuthorizationHandler, NotConfirmedEmailHandler>();
+    builder.Services.AddScoped<IAuthorizationHandler, EmailConfirmedHandler>();
+    builder.Services.AddScoped<IAuthorizationHandler, RegisteredUserHandler>();
+    builder.Services.AddScoped<IAuthorizationHandler, AdministratorUserHandler>();
+
+    logger.Info("App: Configuring services");
     builder.Services.AddScoped<AccountManager>();
     builder.Services.AddScoped<CtUserManager>();
     builder.Services.AddScoped<MealManager>();
     builder.Services.AddScoped<FileManager>();
+    builder.Services.AddScoped<UserActivityManager>();
 
     logger.Info("App: Configuring forwarded headers");
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -103,7 +120,6 @@ try
 
     logger.Info("App: Configuring DB Connections");
     builder.Services.AddDbContext<CaloriesTrackingDbContext>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("CaloriesTrackingDb")));
-    Console.WriteLine(builder.Configuration.GetConnectionString("CaloriesTrackingDb"));
 
     logger.Info("App: Configuring SendGrid");
     builder.Services.AddSendGrid(options =>
@@ -114,8 +130,6 @@ try
 
     logger.Info("App: Configuring Core services");
     builder.Services.AddScoped<SendGridEmailManager>();
-    //builder.Services.AddScoped<EmailManager>();
-    //builder.Services.AddScoped<SendGridApiService>();
 
     logger.Info("App: Configuring web api / controllers");
     builder.Services.AddMemoryCache();

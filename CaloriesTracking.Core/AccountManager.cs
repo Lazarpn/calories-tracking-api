@@ -27,6 +27,7 @@ public class AccountManager
     private readonly UserManager<User> userManager;
     private readonly IConfiguration configuration;
     private readonly string ANGULAR_APP_URL;
+    private readonly int MINUTES_VERIFICATION_CODE_IS_VALID;
 
     public AccountManager(
         IMapper mapper,
@@ -43,22 +44,12 @@ public class AccountManager
         this.emailManager = emailManager;
         jwtHelper = new JwtHelper(configuration);
         ANGULAR_APP_URL = configuration["AngularAppUrl"];
+        MINUTES_VERIFICATION_CODE_IS_VALID = Convert.ToInt32(configuration["minutesVerificationCodeIsValid"]);
     }
 
     public async Task<AuthResponseModel> Login(UserLoginModel model)
     {
         var user = await userManager.FindByEmailAsync(model.Email);
-
-        //if (user == null)
-        //{
-        //    throw new Exception("User with a given email doesn't exist, please register!");
-        //}
-
-        //if (user == null)
-        //{
-        //    throw new ValidationException(ErrorCode.EntityDoesNotExist, new { Entity = "User" });
-        //}
-
         ValidationHelper.MustExist(user);
 
         bool isValidPassword = await userManager.CheckPasswordAsync(user, model.Password);
@@ -80,7 +71,6 @@ public class AccountManager
     public async Task<AuthResponseModel> Register(UserRegisterModel model)
     {
         var user = await userManager.FindByEmailAsync(model.Email);
-        var roless =  await db.Roles.ToListAsync();
         ValidationHelper.MustNotExist(user);
 
         var passwordValidator = new PasswordValidator<User>();
@@ -118,14 +108,13 @@ public class AccountManager
             }
 
             await transaction.CommitAsync();
+            await SendVerificationEmail(newUser);
         }
         catch (Exception)
         {
             await transaction.RollbackAsync();
             throw new ValidationException(ErrorCode.IdentityError);
         }
-
-        var code = userManager.GenerateEmailConfirmationTokenAsync(newUser);
 
         var roles = await userManager.GetRolesAsync(newUser);
         var token = jwtHelper.GenerateJwtToken(newUser.Id, newUser.Email, roles);
@@ -164,8 +153,71 @@ public class AccountManager
         });
 
         //user.LoginSettings.UnsuccessfulLoginAttempts = 0;
+        await db.SaveChangesAsync();
+    }
+
+    public async Task ConfirmEmail(Guid userId, UserConfirmEmailModel model)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        ValidationHelper.MustExist(user);
+
+        if (user.EmailConfirmed)
+        {
+            throw new ValidationException(ErrorCode.AlreadyConfirmedEmail);
+        }
+
+        if (user.EmailVerificationCode != model.EmailVerificationCode)
+        {
+            throw new ValidationException(ErrorCode.InvalidConfirmationCode);
+        }
+
+        var minutesVerificationCodeIsValid = MINUTES_VERIFICATION_CODE_IS_VALID;
+        if (user.DateVerificationCodeSent.Value.AddMinutes(minutesVerificationCodeIsValid) < DateTime.UtcNow)
+        {
+            throw new ValidationException(ErrorCode.ConfirmationCodeExpired);
+        }
+
+        user.EmailConfirmed = true;
 
         await db.SaveChangesAsync();
-        //await platformUserManager.StoreChangeLog(userBeforeChanges, user, changeMadeByUserId: user.Id);
+    }
+
+    public async Task<DateTime> ResendVerificationEmail(Guid userId)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        ValidationHelper.MustExist(user);
+
+
+        if (user.EmailConfirmed)
+        {
+            throw new ValidationException(ErrorCode.AlreadyConfirmedEmail);
+        }
+
+        await SendVerificationEmail(user);
+        return user.DateVerificationCodeSent.Value.AddMinutes(MINUTES_VERIFICATION_CODE_IS_VALID);
+    }
+
+    public async Task ChangeVerificationEmail(Guid userId, ChangeEmailModel model)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        ValidationHelper.MustExist(user);
+
+        var userWithSameEmail = await userManager.FindByEmailAsync(model.NewEmail);
+        ValidationHelper.MustNotExist(userWithSameEmail);
+
+        user.Email = model.NewEmail;
+        user.UserName = model.NewEmail;
+        await userManager.UpdateAsync(user);
+
+        await SendVerificationEmail(user);
+    }
+
+    private async Task SendVerificationEmail(User user)
+    {
+        var verificationCode = Utilities.GenerateNumericCode(6);
+        await emailManager.SendVerificationEmail(user.Email, verificationCode);
+        user.EmailVerificationCode = verificationCode;
+        user.DateVerificationCodeSent = DateTime.UtcNow;
+        await userManager.UpdateAsync(user);
     }
 }

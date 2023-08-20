@@ -4,6 +4,7 @@ using CaloriesTracking.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CaloriesTracking.Data.Migrations
 {
     [DbContext(typeof(CaloriesTrackingDbContext))]
-    partial class CaloriesTrackingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230816152542_VerificationCodeToUser")]
+    partial class VerificationCodeToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,7 +67,7 @@ namespace CaloriesTracking.Data.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("DateVerificationCodeSent")
+                    b.Property<DateTime>("DateVerificationCodeSent")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")

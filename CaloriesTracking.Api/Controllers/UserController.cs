@@ -1,3 +1,4 @@
+using CaloriesTracking.Api.Auth;
 using CaloriesTracking.Common.Helpers;
 using CaloriesTracking.Common.Models.User;
 using CaloriesTracking.Core;
@@ -21,8 +22,9 @@ public class UserController : BaseController
     /// Updates user's calory preference
     /// </summary>
     /// <param name="model">UserCaloriesModel</param>
-    [Authorize]
     [HttpPut("me/calories")]
+    [Authorize(Policy = Policies.EmailConfirmed)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> UpdateCaloriesPreference(UserCaloriesModel model)
@@ -35,9 +37,10 @@ public class UserController : BaseController
     /// Updates a user photo
     /// </summary>
     /// <param name="model">File to be uploaded</param>
-    [Authorize]
     [HttpPut("me/photo")]
     [Consumes("multipart/form-data")]
+    [Authorize(Policy = Policies.EmailConfirmed)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserPhotoModel))]
     public async Task<ActionResult<UserPhotoModel>> UpdatePhoto([FromForm] UserPhotoUploadModel model)
@@ -47,26 +50,12 @@ public class UserController : BaseController
     }
 
     /// <summary>
-    /// Updates user info
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    [Authorize]
-    [HttpPut("me")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> UpdateUserInfo(UserUpdateModel model)
-    {
-        await ctUserManager.UpdateUserInfo(GetCurrentUserId().Value, model);
-        return NoContent();
-    }
-
-    /// <summary>
     /// Gets a user photo
     /// </summary>
     /// <returns>UserPhoto</returns>
-    [Authorize]
     [HttpGet("me/photo")]
+    [Authorize(Policy = Policies.EmailConfirmed)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserPhotoModel))]
     public async Task<ActionResult<UserPhotoModel>> GetPhoto()
@@ -76,11 +65,28 @@ public class UserController : BaseController
     }
 
     /// <summary>
+    /// Updates user info
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [HttpPut("me")]
+    [Authorize(Policy = Policies.EmailConfirmed)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> UpdateUserInfo(UserUpdateModel model)
+    {
+        await ctUserManager.UpdateUserInfo(GetCurrentUserId().Value, model);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Gets user informations
     /// </summary>
     /// <returns>User informations</returns>
-    //[Authorize]
     [HttpGet("me")]
+    [Authorize(Policy = Policies.RegisteredUser)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserMeModel))]
     public async Task<ActionResult<UserMeModel>> GetUserInfo()
@@ -95,9 +101,9 @@ public class UserController : BaseController
     /// Gets users for administration
     /// </summary>
     /// <returns>Users</returns>
-    //[Authorize(Roles = UserRoleConstants.Administrator)]
     [HttpGet("admin/all")]
-    //[ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [Authorize(Policy = Policies.AdministratorUser)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<UserAdminModel>))]
     public async Task<ActionResult<List<UserAdminModel>>> GetUsers()
@@ -111,8 +117,9 @@ public class UserController : BaseController
     /// </summary>
     /// <param name="email">User's email</param>
     /// <param name="model">UserAdminUpdateModel</param>
-    [Authorize(Roles = UserRoleConstants.Administrator)]
     [HttpPut("admin/{email}")]
+    [Authorize(Policy = Policies.AdministratorUser)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> UpdateUser(string email, UserAdminUpdateModel model)
@@ -125,8 +132,9 @@ public class UserController : BaseController
     /// Deletes a user with a given email
     /// </summary>
     /// <param name="email">User's Email</param>
-    [Authorize(Roles = UserRoleConstants.Administrator)]
     [HttpDelete("admin/{email}")]
+    [Authorize(Policy = Policies.AdministratorUser)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteUser(string email)
