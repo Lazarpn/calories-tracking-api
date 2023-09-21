@@ -115,4 +115,18 @@ public class AccountController : BaseController
         await accountManager.ResetPassword(model);
         return NoContent();
     }
+
+    /// <summary>
+    /// Logs a user with google
+    /// </summary>
+    /// <param name="model">GoogleLoginModel</param>
+    /// <returns>AuthResponse-User informations</returns>
+    [HttpPost("login/google")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseModel))]
+    public async Task<ActionResult<AuthResponseModel>> GoogleLogin(GoogleLoginModel model)
+    {
+        var authResponse = await accountManager.GoogleLogin(model);
+        return Ok(authResponse);
+    }
 }

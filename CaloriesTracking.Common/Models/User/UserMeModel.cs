@@ -11,5 +11,6 @@ public class UserMeModel
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public bool EmailConfirmed { get; set; }
+    public DateTime DateVerificationCodeExpires { get; set; }
     public int? CaloriesPreference { get; set; }
 }

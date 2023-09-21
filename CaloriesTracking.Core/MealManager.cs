@@ -70,7 +70,6 @@ public class MealManager
     {
         var meal = await db.Meals.FirstOrDefaultAsync(m => m.Id == id && m.UserId == currentUserId);
         ValidationHelper.MustExist(meal);
-
         db.Meals.Remove(meal);
         await db.SaveChangesAsync();
     }

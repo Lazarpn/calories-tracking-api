@@ -1,17 +1,25 @@
 using AutoMapper;
+using Azure.Identity;
 using CaloriesTracking.Common.Enums;
 using CaloriesTracking.Common.Exceptions;
 using CaloriesTracking.Common.Helpers;
 using CaloriesTracking.Common.Models.User;
 using CaloriesTracking.Data;
 using CaloriesTracking.Entities;
+using FirebaseAdmin.Auth;
+using Google.Apis.Auth;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Server.IIS.Core;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using Microsoft.IdentityModel.Tokens;
 using RTools_NTS.Util;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
 
@@ -27,6 +35,7 @@ public class AccountManager
     private readonly UserManager<User> userManager;
     private readonly IConfiguration configuration;
     private readonly string ANGULAR_APP_URL;
+    private readonly string GOOGLE_CLIENT_ID;
     private readonly int MINUTES_VERIFICATION_CODE_IS_VALID;
 
     public AccountManager(
@@ -44,6 +53,7 @@ public class AccountManager
         this.emailManager = emailManager;
         jwtHelper = new JwtHelper(configuration);
         ANGULAR_APP_URL = configuration["AngularAppUrl"];
+        GOOGLE_CLIENT_ID = configuration["GoogleClientId"];
         MINUTES_VERIFICATION_CODE_IS_VALID = Convert.ToInt32(configuration["minutesVerificationCodeIsValid"]);
     }
 
@@ -90,7 +100,7 @@ public class AccountManager
             UserName = model.Email,
             EmailConfirmed = false
         };
-        
+
         try
         {
             var userCreateResult = await userManager.CreateAsync(newUser, model.Password);
@@ -184,6 +194,7 @@ public class AccountManager
 
     public async Task<DateTime> ResendVerificationEmail(Guid userId)
     {
+        //TODO: trebalo bi staviti na 3 max pokusaja
         var user = await userManager.FindByIdAsync(userId.ToString());
         ValidationHelper.MustExist(user);
 
@@ -210,6 +221,50 @@ public class AccountManager
         await userManager.UpdateAsync(user);
 
         await SendVerificationEmail(user);
+    }
+
+    //TODO:
+    public async Task<AuthResponseModel> GoogleLogin(GoogleLoginModel model)
+    {
+        try
+        {
+            GoogleJsonWebSignature.Payload decodedToken = await GoogleJsonWebSignature.ValidateAsync(model.IdToken);
+
+            if (decodedToken == null || decodedToken.Audience.ToString() != GOOGLE_CLIENT_ID)
+            {
+                throw new ValidationException(ErrorCode.InvalidGoogleAccount);
+            }
+
+            var userSocialLoginModel = new UserSocialLoginModel
+            {
+                SocialAccountType = SocialAccountType.Google,
+                ExpiresIn = decodedToken.ExpirationTimeSeconds.ToString(),
+                //RefreshToken = model.RefreshToken,
+                Email = decodedToken.Email.ToString(),
+                DisplayName = decodedToken.GivenName.ToString(),
+                SocialAccountUserId = decodedToken.JwtId.ToString(),
+            };
+
+            var loginResult = await SocialLogin(userSocialLoginModel);
+            return loginResult;
+        }
+        catch (ValidationException ex) { throw ex; }
+        catch (NotFoundException ex) { throw ex; }
+        catch
+        {
+            throw new ValidationException(ErrorCode.InvalidGoogleAccount);
+        };
+    }
+
+    private async Task<AuthResponseModel> SocialLogin(UserSocialLoginModel model)
+    {
+        var user = await userManager.FindByEmailAsync(model.Email);
+        ValidationHelper.MustExist<User>(user);
+
+        var roles = await userManager.GetRolesAsync(user);
+        var token = jwtHelper.GenerateJwtToken(user.Id, user.Email, roles);
+
+        return new AuthResponseModel { Token = token };
     }
 
     private async Task SendVerificationEmail(User user)

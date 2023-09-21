@@ -19,6 +19,7 @@ public class CtUserManager
     private readonly IMapper mapper;
     private readonly UserManager<User> userManager;
     private readonly FileManager fileManager;
+    private readonly int MINUTES_VERIFICATION_CODE_IS_VALID;
 
     public CtUserManager(
         CaloriesTrackingDbContext db,
@@ -32,6 +33,7 @@ public class CtUserManager
         this.mapper = mapper;
         this.userManager = userManager;
         this.fileManager = fileManager;
+        MINUTES_VERIFICATION_CODE_IS_VALID = Convert.ToInt32(configuration["minutesVerificationCodeIsValid"]);
     }
 
     public async Task UpdateCaloriesPreference(Guid userId, UserCaloriesModel model)
@@ -87,11 +89,12 @@ public class CtUserManager
 
         var userInfo = new UserMeModel
         {
+            Email = user.Email,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Email = user.Email,
+            EmailConfirmed = user.EmailConfirmed,
+            DateVerificationCodeExpires = user.DateVerificationCodeSent.Value.AddMinutes(MINUTES_VERIFICATION_CODE_IS_VALID),
             CaloriesPreference = user.CaloriesPreference,
-            EmailConfirmed = user.EmailConfirmed
         };
 
         return userInfo;
@@ -102,7 +105,6 @@ public class CtUserManager
     public async Task<List<UserAdminModel>> GetUsers()
     {
         var users = await userManager.GetUsersInRoleAsync("user");
-        var userss = await db.Users.ToListAsync();
         // TODO: jel je ovde okej koristiti map jer pod jedan imam listu, pod 2 user-e
         // po roli mogu samo ovako da dobijem i ne mogu nikako projectTo?
         var usersList = mapper.Map<List<UserAdminModel>>(users);

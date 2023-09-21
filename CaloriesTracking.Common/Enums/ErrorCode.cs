@@ -21,6 +21,7 @@ public enum ErrorCode
     WrongAspectRatio,
     MissingAspectRatio,
     EmailNotSent,
+    InvalidGoogleAccount,
     AlreadyConfirmedEmail,
     InvalidConfirmationCode,
     ConfirmationCodeExpired
