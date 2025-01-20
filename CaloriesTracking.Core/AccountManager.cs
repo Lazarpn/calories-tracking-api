@@ -29,7 +29,7 @@ namespace CaloriesTracking.Core;
 public class AccountManager
 {
     private readonly CaloriesTrackingDbContext db;
-    private readonly SendGridEmailManager emailManager;
+    //private readonly SendGridEmailManager emailManager;
     private readonly JwtHelper jwtHelper;
     private readonly IMapper mapper;
     private readonly UserManager<User> userManager;
@@ -42,15 +42,15 @@ public class AccountManager
         IMapper mapper,
         UserManager<User> userManager,
         IConfiguration configuration,
-        CaloriesTrackingDbContext db,
-        SendGridEmailManager emailManager
+        CaloriesTrackingDbContext db
+        //SendGridEmailManager emailManager
         )
     {
         this.mapper = mapper;
         this.configuration = configuration;
         this.userManager = userManager;
         this.db = db;
-        this.emailManager = emailManager;
+        //this.emailManager = emailManager;
         jwtHelper = new JwtHelper(configuration);
         ANGULAR_APP_URL = configuration["AngularAppUrl"];
         GOOGLE_CLIENT_ID = configuration["GoogleClientId"];
@@ -143,7 +143,7 @@ public class AccountManager
         var resetPasswordToken = await userManager.GeneratePasswordResetTokenAsync(user);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(resetPasswordToken));
         var resetPasswordUrl = $"{ANGULAR_APP_URL}/auth/reset-password/{user.Id}/{encodedToken})";
-        await emailManager.SendForgotPasswordEmail(model.Email, resetPasswordUrl);
+        //await emailManager.SendForgotPasswordEmail(model.Email, resetPasswordUrl);
     }
 
     public async Task ResetPassword(ResetPasswordModel model)
@@ -270,7 +270,7 @@ public class AccountManager
     private async Task SendVerificationEmail(User user)
     {
         var verificationCode = Utilities.GenerateNumericCode(6);
-        await emailManager.SendVerificationEmail(user.Email, verificationCode);
+        //await emailManager.SendVerificationEmail(user.Email, verificationCode);
         user.EmailVerificationCode = verificationCode;
         user.DateVerificationCodeSent = DateTime.UtcNow;
         await userManager.UpdateAsync(user);

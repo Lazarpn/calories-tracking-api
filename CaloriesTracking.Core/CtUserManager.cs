@@ -18,21 +18,20 @@ public class CtUserManager
     private readonly IConfiguration configuration;
     private readonly IMapper mapper;
     private readonly UserManager<User> userManager;
-    private readonly FileManager fileManager;
+    //private readonly FileManager fileManager;
     private readonly int MINUTES_VERIFICATION_CODE_IS_VALID;
 
     public CtUserManager(
         CaloriesTrackingDbContext db,
         IConfiguration configuration,
-        IMapper mapper, UserManager<User> userManager,
-        FileManager fileManager
+        IMapper mapper, UserManager<User> userManager
         )
     {
         this.db = db;
         this.configuration = configuration;
         this.mapper = mapper;
         this.userManager = userManager;
-        this.fileManager = fileManager;
+        //this.fileManager = fileManager;
         MINUTES_VERIFICATION_CODE_IS_VALID = Convert.ToInt32(configuration["minutesVerificationCodeIsValid"]);
     }
 
@@ -55,10 +54,10 @@ public class CtUserManager
         var user = await db.Users.FindAsync(userId);
         ValidationHelper.MustExist(user);
 
-        user.FileName = await fileManager.ProcessFileStorageUpload<User>(model.File, user.FileName);
+        //user.FileName = await fileManager.ProcessFileStorageUpload<User>(model.File, user.FileName);
         user.FileOriginalName = model.File.FileName;
-        user.FileUrl = await fileManager.GetFileStorageUrl<User>(user.FileName);
-        user.ThumbUrl = await fileManager.GetFileStorageUrl<User>(user.FileName, isThumb: true);
+        //user.FileUrl = await fileManager.GetFileStorageUrl<User>(user.FileName);
+        //user.ThumbUrl = await fileManager.GetFileStorageUrl<User>(user.FileName, isThumb: true);
         await db.SaveChangesAsync();
 
         return new UserPhotoModel { FileUrl = user.ThumbUrl };

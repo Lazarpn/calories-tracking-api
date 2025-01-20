@@ -87,7 +87,7 @@ try
     builder.Services.AddScoped<AccountManager>();
     builder.Services.AddScoped<CtUserManager>();
     builder.Services.AddScoped<MealManager>();
-    builder.Services.AddScoped<FileManager>();
+    //builder.Services.AddScoped<FileManager>();
     builder.Services.AddScoped<UserActivityManager>();
 
     logger.Info("App: Configuring forwarded headers");
@@ -122,14 +122,14 @@ try
     builder.Services.AddDbContext<CaloriesTrackingDbContext>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("CaloriesTrackingDb")));
 
     logger.Info("App: Configuring SendGrid");
-    builder.Services.AddSendGrid(options =>
-    {
-        options.ApiKey = builder.Configuration["SendGridApiKey"];
-    });
+    //builder.Services.AddSendGrid(options =>
+    //{
+    //    options.ApiKey = builder.Configuration["SendGridApiKey"];
+    //});
 
 
     logger.Info("App: Configuring Core services");
-    builder.Services.AddScoped<SendGridEmailManager>();
+    //builder.Services.AddScoped<SendGridEmailManager>();
 
     logger.Info("App: Configuring web api / controllers");
     builder.Services.AddMemoryCache();
@@ -245,3 +245,6 @@ finally
     // Ensure to flush and stop internal timers/threads before application-exit (Avoid segmentation fault on Linux)
     NLog.LogManager.Shutdown();
 }
+
+
+

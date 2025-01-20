@@ -19,7 +19,7 @@ public class UtilityController : ControllerBase
 
     [HttpPost]
     [Route("seed-data")]
-    [Authorize(UserRoleConstants.Administrator)]
+    //[Authorize(UserRoleConstants.Administrator)]
     public async Task<IActionResult> SeedData()
     {
         await db.SeedData();
