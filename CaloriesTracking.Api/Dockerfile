@@ -1,24 +1,33 @@
-# Use the .NET 7 runtime image
+# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+# This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-# Use the .NET 7 SDK image for building the app
+
+# This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-
-# Copy the project file and restore dependencies
 COPY ["CaloriesTracking.Api/CaloriesTracking.Api.csproj", "CaloriesTracking.Api/"]
-RUN dotnet restore "CaloriesTracking.Api/CaloriesTracking.Api.csproj"
-
-# Copy the rest of the application and build it
+COPY ["CaloriesTracking.Core/CaloriesTracking.Core.csproj", "CaloriesTracking.Core/"]
+COPY ["CaloriesTracking.Data/CaloriesTracking.Data.csproj", "CaloriesTracking.Data/"]
+COPY ["CaloriesTracking.Entities/CaloriesTracking.Entities.csproj", "CaloriesTracking.Entities/"]
+COPY ["CaloriesTracking.Common/CaloriesTracking.Common.csproj", "CaloriesTracking.Common/"]
+RUN dotnet restore "./CaloriesTracking.Api/CaloriesTracking.Api.csproj"
 COPY . .
 WORKDIR "/src/CaloriesTracking.Api"
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet build "./CaloriesTracking.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Final image with the app
+# This stage is used to publish the service project to be copied to the final stage
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./CaloriesTracking.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "CaloriesTracking.Api.dll"]

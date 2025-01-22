@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  calories-tracking-api:
+    image: calories-tracking-api
+    build: .
+    ports:
+      - "7068:8080"
+    environment:
+      - ConnectionStrings__CaloriesTrackingDb=${ConnectionStrings__CaloriesTrackingDb}
+      - ConnectionStrings__AzureWebJobsStorage=${ConnectionStrings__AzureWebJobsStorage}
+      - ThumbnailDimension=${ThumbnailDimension}
+      - MaxFileSizeInMb=${MaxFileSizeInMb}
+      - MinutesBlobStorageUrlExpiresIn=${MinutesBlobStorageUrlExpiresIn}
+      - SendGridApiKey=${SendGridApiKey}
+      - GoogleClientId=${GoogleClientId}
+      - AllowedDomains=${AllowedDomains}
+      - AngularAppUrl=${AngularAppUrl}
+      - ShowSwagger=${ShowSwagger}
+      - JwtIssuer=${JwtIssuer}
+      - JwtAudience=${JwtAudience}
+      - JwtKey=${JwtKey}
+      - DurationInMinutes=${DurationInMinutes}
+      - MinutesVerificationCodeIsValid=${MinutesVerificationCodeIsValid}
+      - Logging__LogLevel__Default=${Logging__LogLevel__Default}
+      - Logging__LogLevel__Microsoft_AspNetCore=${Logging__LogLevel__Microsoft_AspNetCore}
+    volumes:
+      - .:/app
+    command: ["dotnet", "CaloriesTracking.Api.dll"]

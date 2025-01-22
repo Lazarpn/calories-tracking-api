@@ -98,7 +98,8 @@ public class AccountManager
             LastName = model.LastName,
             Email = model.Email,
             UserName = model.Email,
-            EmailConfirmed = false
+            //EmailConfirmed = false
+            EmailConfirmed = true
         };
 
         try

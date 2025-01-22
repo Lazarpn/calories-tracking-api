@@ -25,6 +25,8 @@ using System.Text;
 using Microsoft.Extensions.Azure;
 using Microsoft.AspNetCore.Authorization;
 using CaloriesTracking.Api.Auth;
+using System.Net;
+using Microsoft.AspNetCore.Hosting;
 
 Logger logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Info("App: Starting Application");
@@ -109,7 +111,6 @@ try
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .WithExposedHeaders("refreshed-token")
-                    .AllowCredentials()
                     .WithOrigins(allowedDomains);
                 policyBuilder.SetPreflightMaxAge(TimeSpan.FromSeconds(600));
             });
@@ -182,7 +183,6 @@ try
         var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
         options.IncludeXmlComments(xmlPath);
     });
-
 
     WebApplication app = builder.Build();
 
