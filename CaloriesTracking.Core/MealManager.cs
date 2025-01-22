@@ -4,7 +4,6 @@ using CaloriesTracking.Common.Helpers;
 using CaloriesTracking.Common.Models.Meal;
 using CaloriesTracking.Data;
 using CaloriesTracking.Entities;
-using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace CaloriesTracking.Core;

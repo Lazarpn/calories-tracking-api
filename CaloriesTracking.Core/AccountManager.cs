@@ -1,5 +1,4 @@
 using AutoMapper;
-using Azure.Identity;
 using CaloriesTracking.Common.Enums;
 using CaloriesTracking.Common.Exceptions;
 using CaloriesTracking.Common.Helpers;
@@ -14,9 +13,7 @@ using Microsoft.AspNetCore.Server.IIS.Core;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using Microsoft.IdentityModel.Tokens;
-using RTools_NTS.Util;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq.Expressions;

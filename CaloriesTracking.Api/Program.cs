@@ -120,7 +120,7 @@ try
     builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
     logger.Info("App: Configuring DB Connections");
-    builder.Services.AddDbContext<CaloriesTrackingDbContext>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("CaloriesTrackingDb")));
+    builder.Services.AddDbContext<CaloriesTrackingDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("CaloriesTrackingDb")));
 
     logger.Info("App: Configuring SendGrid");
     //builder.Services.AddSendGrid(options =>
